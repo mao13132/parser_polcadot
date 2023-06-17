@@ -1,0 +1,75 @@
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+from src.polcadot_post_pars import PolcadotPostPars
+
+
+class PolcadotPostItter:
+    def __init__(self, driver, links_post):
+        self.driver = driver
+        self.source_name = 'Polkadot'
+        self.links_post = links_post
+
+    def load_page(self, url):
+        try:
+            self.driver.get(url)
+            return True
+        except Exception as es:
+            print(f'Ошибка при заходе на "{url}" "{es}"')
+            return False
+
+    def __check_load_page(self, name_post):
+        try:
+            WebDriverWait(self.driver, 60).until(
+                EC.presence_of_element_located((By.XPATH, f'//*[contains(text(), "{name_post[:-3]}")]')))
+            return True
+        except Exception as es:
+            print(f'Ошибка при загрузке "{name_post}" поста "{es}"')
+            return False
+
+    def loop_load_page(self, post):
+        coun = 0
+        coun_ower = 4
+
+        while True:
+            coun += 1
+
+            if coun >= coun_ower:
+                print(f'Не смог зайти в пост {post["name_post"]}')
+                return False
+
+            response = self.load_page(post['link'])
+
+            if not response:
+                continue
+
+            result_load = self.__check_load_page(post['name_post'])
+
+            if not result_load:
+                return False
+
+            return True
+
+    def itter_posts(self, posts):
+        for post in posts:
+
+            result_load_page = self.loop_load_page(post)
+
+            if not result_load_page:
+                continue
+
+            data_pars = PolcadotPostPars(self.driver, post).start_pars()
+
+            print(data_pars)
+
+    def itter_dict_them(self):
+        for post in self.links_post:
+            print(f'Начинаю обработку {post["name_them"]}')
+
+            response_itter_links = self.itter_posts(post['links'])
+
+            print()
+
+    def start_post_pars(self):
+        response_itter_post = self.itter_dict_them()

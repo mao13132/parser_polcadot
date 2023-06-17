@@ -22,6 +22,8 @@ class CreatBrowser:
 
         options = webdriver.ChromeOptions()
 
+        # options.add_argument(f"user-agent=Mozilla/5.0 (Android 10; Mobile; rv:106.0) Gecko/106.0 Firefox/106.0")
+
         if platform_to_os == "Linux":
             binary = self.get_chrome()
             options.binary_location = binary
@@ -33,9 +35,6 @@ class CreatBrowser:
             options.add_argument("--headless")
 
         options.add_argument('--disable-dev-shm-usage')
-
-        path_dir = (f'browser\\profile\\{name_profile}')
-        options.add_argument(f"user-data-dir={path_dir}")  # Path to your chrome profile
 
         prefs = {"enable_do_not_track": True}
         options.add_experimental_option("prefs", prefs)
