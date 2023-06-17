@@ -33,6 +33,7 @@ class CreatBrowser:
 
         if stels:
             options.add_argument("--headless")
+            options.add_argument("window-size=1400,600")
 
         options.add_argument('--disable-dev-shm-usage')
 

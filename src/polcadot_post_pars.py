@@ -271,7 +271,7 @@ class PolcadotPostPars:
         except:
             return 0, 0
         try:
-            like, dislike = reactions_.split('\b')
+            like, dislike = reactions_.split('\n')
         except:
             return 0, 0
 

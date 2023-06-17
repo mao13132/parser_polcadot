@@ -63,7 +63,7 @@ class PolcadotPostItter:
 
             self.links_post[count_seld_dict]['links'][count]['data'] = data_pars
 
-            print()
+            print(f'Обработал пост {post["name_post"][:10]}')
 
 
 
@@ -71,11 +71,13 @@ class PolcadotPostItter:
 
     def itter_dict_them(self):
         for count_seld_dict, post in enumerate(self.links_post):
-            print(f'Начинаю обработку {post["name_them"]}')
+            print(f'Начинаю обработку группы постов {post["name_them"]}')
 
             response_itter_links = self.itter_posts(post['links'], count_seld_dict)
 
             print()
+
+        return True
 
     def start_post_pars(self):
 

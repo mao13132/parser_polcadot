@@ -3,12 +3,12 @@ from src.polcadot_pars import PolcadotPars
 
 
 def main():
-    stels = False
+    stels = True
     browser_core = CreatBrowser('polcadot', stels)
 
-    print(f'Парсер запущен')
+    print(f'Парсер запущен. Захожу на сайт')
 
-    response_job = PolcadotPars(browser_core.driver).start_pars()
+    response_job = PolcadotPars(browser_core.driver, stels).start_pars()
 
 
 if __name__ == '__main__':

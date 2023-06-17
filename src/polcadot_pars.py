@@ -8,10 +8,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from src.polcadot_post_itter import PolcadotPostItter
 from src.temp_list import TempList
+from telegram_debug import SendlerOneCreate
+
 
 class PolcadotPars:
-    def __init__(self, driver):
+    def __init__(self, driver, stels):
         self.driver = driver
+        self.stels = stels
         self.url = f'https://polkadot.polkassembly.io/opengov'
         self.source_name = 'Polkadot'
         self.links_post = []
@@ -100,16 +103,21 @@ class PolcadotPars:
 
         return name_them, count_post
 
-    def filter_date(self, row):
+    def filter_date(self, row, name_them):
         try:
             _id_post = row.find_elements(by=By.XPATH,
                                          value=f".//td")
-            id_post = _id_post[-1].text
+
+            if name_them.lower() == 'discussions':
+                id_post = _id_post[-1].text
+            else:
+                id_post = _id_post[-2].text
         except:
             return True
 
         if 'hour' in id_post:
             return id_post
+
         if 'day' in id_post:
             try:
                 coun_day = int(id_post.split()[0])
@@ -119,7 +127,7 @@ class PolcadotPars:
                 return False
 
 
-        return id_post
+        return False
 
     def generet_links(self, list_row, name_them):
 
@@ -159,7 +167,7 @@ class PolcadotPars:
             except:
                 name_post = ''
 
-            date_post = self.filter_date(row)
+            date_post = self.filter_date(row, name_them)
 
             if not date_post:
                 """Фильтр по дате в 24 часа"""
@@ -184,6 +192,8 @@ class PolcadotPars:
         count = 0
         count_ower = 4
 
+        time_wait = 5
+
         while True:
             count += 1
 
@@ -195,26 +205,34 @@ class PolcadotPars:
                 elements = self.driver.find_elements(by=By.XPATH,
                                                      value=f"//*[contains(text(), 'Upcoming Events')]//parent::div//parent::div//*[contains(@class, 'ant-spin-container')]")
             except Exception as es:
-                print(f'Ошибка при 1 парсинге комментариев "{es}"')
-                time.sleep(1)
+                # print(f'Ошибка при 1 парсинге комментариев "{es}"')
+                time.sleep(time_wait)
                 continue
 
             try:
-                list_com_in = elements[1].find_elements(by=By.XPATH, value=f".//li")
 
-            except Exception as es:
-                print(f'Ошибка при 2 парсинге комментариев "{es}"')
-                time.sleep(1)
+                list_com_in = elements[1].find_elements(by=By.XPATH, value=f".//li")
+                # if self.stels:
+                #
+                #     list_com_in = elements[2].find_elements(by=By.XPATH, value=f".//li")
+                # else:
+                #
+                #     list_com_in = elements[1].find_elements(by=By.XPATH, value=f".//li")
+
+            except:
+                # print(f'Ошибка при 2 парсинге комментариев "{es}"')
+                time.sleep(time_wait)
                 continue
 
             if len(list_com_in) > 0:
 
                 return list_com_in
 
-            time.sleep(1)
+            time.sleep(time_wait)
 
 
     def scrap_comment(self):
+        print(f'Начинаю парсинг общих комментариев')
         good_comments = []
 
         list_com_in = self.loop_find_comments()
@@ -222,13 +240,15 @@ class PolcadotPars:
         if not list_com_in:
             return False
 
-        print(f'Обнаружил {len(list_com_in)} комментариев')
 
         for comments in list_com_in:
             try:
                 data_com, time_comm, author_comm, text_comm = comments.text.split('\n')
             except Exception as es:
                 print(f'Ошибка при сплите комментария "{es}"')
+
+                SendlerOneCreate(self.driver).send_error_tg_img()
+
                 continue
 
             dict_comm = {}
@@ -252,6 +272,7 @@ class PolcadotPars:
             name_them, count_post = self.get_name_count_theme(them)
 
             if count_post == 0:
+                print(f'Нет постов в теме {name_them}')
                 continue
 
             active_theme = self.loop_click_theme(them)
@@ -270,6 +291,10 @@ class PolcadotPars:
 
             list_links = self.generet_links(list_row, name_them)
 
+            if list_links == []:
+                print(f'Нет свежих постов в теме {name_them}')
+                continue
+
             good_itter = {}
 
             good_itter['name_them'] = name_them
@@ -277,7 +302,7 @@ class PolcadotPars:
 
             self.links_post.append(good_itter)
 
-            print(f'Спарсил {count_post} тем на {name_them}')
+            print(f'Спарсил {len(list_links)} пост(ов) в теме {name_them}')
 
         return self.links_post
 
@@ -334,20 +359,22 @@ class PolcadotPars:
 
     def start_pars(self):
 
-        # result_start_page = self.load_start_site()
-        #
-        # if not result_start_page:
-        #     return False
-        #
-        #
-        # list_comments = self.scrap_comment()
-        #
-        # response = self.pars_step1_rows()
+        result_start_page = self.load_start_site()
 
-        list_comments = TempList.list_comments
-        links_post = TempList.link_posts
+        if not result_start_page:
+            return False
 
-        list_good_pars_post = PolcadotPostItter(self.driver, links_post).start_post_pars()
+        list_comments = self.scrap_comment()
+
+        print(f'Спарсил {len(list_comments)} общих комментария')
+
+        response = self.pars_step1_rows()
+
+        # list_comments = TempList.list_comments
+        # links_post = TempList.link_posts
+
+        list_good_pars_post = PolcadotPostItter(self.driver, self.links_post).start_post_pars()
+        # list_good_pars_post = PolcadotPostItter(self.driver, links_post).start_post_pars()
 
 
         print(list_good_pars_post)
