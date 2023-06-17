@@ -51,8 +51,8 @@ class PolcadotPostItter:
 
             return True
 
-    def itter_posts(self, posts):
-        for post in posts:
+    def itter_posts(self, posts, count_seld_dict):
+        for count, post in enumerate(posts):
 
             result_load_page = self.loop_load_page(post)
 
@@ -61,15 +61,24 @@ class PolcadotPostItter:
 
             data_pars = PolcadotPostPars(self.driver, post).start_pars()
 
-            print(data_pars)
+            self.links_post[count_seld_dict]['links'][count]['data'] = data_pars
+
+            print()
+
+
+
+
 
     def itter_dict_them(self):
-        for post in self.links_post:
+        for count_seld_dict, post in enumerate(self.links_post):
             print(f'Начинаю обработку {post["name_them"]}')
 
-            response_itter_links = self.itter_posts(post['links'])
+            response_itter_links = self.itter_posts(post['links'], count_seld_dict)
 
             print()
 
     def start_post_pars(self):
+
         response_itter_post = self.itter_dict_them()
+
+        return self.links_post

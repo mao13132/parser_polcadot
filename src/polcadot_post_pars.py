@@ -20,8 +20,8 @@ class PolcadotPostPars:
         try:
             status = self.driver.find_element(by=By.XPATH, value=f"//*[contains(@class, 'rounded-md')]"
                                                                  f"//*[contains(@class, 'rounded-full')]").text
-        except Exception as es:
-            print(f'Ошибка при получение статуса {es}')
+        except:
+            # print(f'Ошибка при получение статуса {es}')
             status = ''
 
         return status
@@ -31,9 +31,15 @@ class PolcadotPostPars:
             name_author = self.driver.find_element(by=By.XPATH, value=f"//*[contains(text(), 'By:')]"
                                                                       f"//parent::div"
                                                                       f"//*[contains(@class, 'identityName')]").text
-        except Exception as es:
-            print(f'Ошибка при получение name_author {es}')
-            name_author = ''
+        except:
+
+            try:
+                name_author = self.driver.find_element(by=By.XPATH, value=f"//*[contains(text(), 'By:')]"
+                                                                          f"//parent::div"
+                                                                          f"//*[contains(@class, 'username')]").text
+            except Exception as es:
+                print(f'Ошибка при получение name_author {es}')
+                name_author = ''
 
         return name_author
 
@@ -147,13 +153,13 @@ class PolcadotPostPars:
         except:
             confirmation = '0%'
 
-
         return decision, confirmation
 
     def get_voting2(self):
         try:
 
-            voting = self.driver.find_elements(by=By.XPATH, value=f"//*[contains(@class, 'vote-progress')]//span[contains(@class, 'semibold')]")
+            voting = self.driver.find_elements(by=By.XPATH,
+                                               value=f"//*[contains(@class, 'vote-progress')]//span[contains(@class, 'semibold')]")
 
         except Exception as es:
             print(f'Ошибка при получение get_voting2 {es}')
@@ -169,13 +175,13 @@ class PolcadotPostPars:
         except:
             nay = '0%'
 
-
         return aye, nay
 
     def get_full_voting(self):
         try:
 
-            list_voit_in = self.driver.find_elements(by=By.XPATH, value=f"//section[contains(@class, 'grid grid-cols')]")
+            list_voit_in = self.driver.find_elements(by=By.XPATH,
+                                                     value=f"//section[contains(@class, 'grid grid-cols')]")
 
         except Exception as es:
             print(f'Ошибка при получение get_full_voting {es}')
@@ -186,7 +192,7 @@ class PolcadotPostPars:
             formated_voit_data = list_voit_in[-1].find_elements(by=By.XPATH, value=f".//article")
 
         except Exception as es:
-            print(f'Ошибка при получение get_full_voting formated_voit_data {es}')
+            # print(f'Ошибка при получение get_full_voting formated_voit_data {es}')
             return '0', '0', '0', '0'
 
         try:
@@ -211,8 +217,95 @@ class PolcadotPostPars:
 
         return ayes, nays, support, issuance
 
+    def _get_comments_post(self):
 
+        try:
+            list_comments_in = self.driver.find_elements(by=By.XPATH, value=f"//*[contains(@role, 'tabpanel')]/div/div")
+        except Exception as es:
+            print(f'Ошибка при получение _get_comment_post 1 {es}')
+            return []
 
+        try:
+            list_comments = list_comments_in[-1].find_elements(by=By.XPATH, value=f"."
+                                                                                  f"//*[contains(@class, "
+                                                                                  f"'w-full overflow-hidden')]")
+        except Exception as es:
+            print(f'Ошибка при получение _get_comment_post 2 {es}')
+            return []
+
+        return list_comments
+
+    def get_name_comment(self, comment):
+        try:
+            name = comment.find_element(by=By.XPATH, value=f".//*[contains(@class, 'identityName')]").text
+        except:
+            name = ''
+
+        return name
+
+    def get_time_comment(self, comment):
+        try:
+            time_comment = comment.find_element(by=By.XPATH, value=f".//*[contains(@class, 'clock')]"
+                                                                   f"//parent::span").text
+        except:
+            time_comment = ''
+
+        return time_comment
+
+    def get_text_comment(self, comment):
+        try:
+            text_comment_in = comment.find_elements(by=By.XPATH, value=f".//*[contains(@class, 'rounded')]")
+        except:
+            return ''
+
+        try:
+            text_comment = text_comment_in[-2].text
+        except:
+            text_comment = ''
+
+        return text_comment
+
+    def get_reaction_comment(self, comment):
+        try:
+            reactions_ = comment.find_element(by=By.XPATH, value=f".//*[contains(@class, 'reactions')]").text
+        except:
+            return 0, 0
+        try:
+            like, dislike = reactions_.split('\b')
+        except:
+            return 0, 0
+
+        return like, dislike
+
+    def itter_comments(self, list_comments_in):
+        list_comment = []
+
+        for comment in list_comments_in:
+
+            dict_comment = {}
+            name_comment = self.get_name_comment(comment)
+            dict_comment['name_comment'] = name_comment
+
+            time_comment = self.get_time_comment(comment)
+            dict_comment['time_comment'] = time_comment
+
+            text_comment = self.get_text_comment(comment)
+            dict_comment['text_comment'] = text_comment
+
+            like, dislike = self.get_reaction_comment(comment)
+            dict_comment['like'] = like
+            dict_comment['dislike'] = dislike
+
+            list_comment.append(dict_comment)
+
+        return list_comment
+
+    def get_comments_post(self):
+        list_comments_in = self._get_comments_post()
+
+        list_comments = self.itter_comments(list_comments_in)
+
+        return list_comments
 
     def start_pars(self):
         name_author = self.loop_get_author()
@@ -250,6 +343,8 @@ class PolcadotPostPars:
         self.post_data['support'] = support
         self.post_data['issuance'] = issuance
 
+        list_comment = self.get_comments_post()
+        self.post_data['comment'] = list_comment
 
-        print()
-        print()
+
+        return self.post_data

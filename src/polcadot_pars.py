@@ -350,4 +350,6 @@ class PolcadotPars:
         list_good_pars_post = PolcadotPostItter(self.driver, links_post).start_post_pars()
 
 
-        print()
+        print(list_good_pars_post)
+
+        #TODO сохранить данные

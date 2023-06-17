@@ -46,10 +46,8 @@ class TempList:
                       'text_comm': 'Execute named scheduled task 0x21fc0d6c...'}]
 
     link_posts = [{'name_them': 'Small Spender', 'links': [
-            {'link': 'https://polkadot.polkassembly.io/referenda/10', 'id': '10',
-             'name_post': 'Polkashots.io Cloud Costs January-April 2023'},
-            {'link': 'https://polkadot.polkassembly.io/referenda/7', 'id': '7',
-             'name_post': 'Nomination Pool Incentives - Fixing an issue with Motion 339'},
+            {'link': 'https://polkadot.polkassembly.io/post/1812', 'id': '7',
+             'name_post': 'Ledger Apps Maintenance Proposal (Polkadot, Kusama, Statemine, Statemint)'},
             {'link': 'https://polkadot.polkassembly.io/referenda/2', 'id': '2',
              'name_post': 'ParaSpell XCM SDK Maintenance funding for 5months - Polkadot Treasury Proposal'},
             {'link': 'https://polkadot.polkassembly.io/referenda/1', 'id': '1',

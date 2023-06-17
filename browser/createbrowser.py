@@ -22,7 +22,7 @@ class CreatBrowser:
 
         options = webdriver.ChromeOptions()
 
-        # options.add_argument(f"user-agent=Mozilla/5.0 (Android 10; Mobile; rv:106.0) Gecko/106.0 Firefox/106.0")
+        options.add_argument(f"user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
 
         if platform_to_os == "Linux":
             binary = self.get_chrome()
