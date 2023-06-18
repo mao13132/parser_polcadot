@@ -13,6 +13,8 @@ class PolcadotPostItter:
 
     def load_page(self, url):
         try:
+
+
             self.driver.get(url)
             return True
         except Exception as es:
@@ -63,7 +65,7 @@ class PolcadotPostItter:
 
             self.links_post[count_seld_dict]['links'][count]['data'] = data_pars
 
-            print(f'Обработал пост {post["name_post"][:10]}')
+            # print(f'Обработал пост {post["name_post"][:10]}')
 
 
 

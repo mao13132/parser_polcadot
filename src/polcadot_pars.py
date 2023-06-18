@@ -1,23 +1,28 @@
 import time
 
+import json
+
+from datetime import datetime
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
+from save_result import SaveResult
 from src.polcadot_post_itter import PolcadotPostItter
 from src.temp_list import TempList
 from telegram_debug import SendlerOneCreate
 
 
 class PolcadotPars:
-    def __init__(self, driver, stels):
+    def __init__(self, driver, filter_24_date):
         self.driver = driver
-        self.stels = stels
         self.url = f'https://polkadot.polkassembly.io/opengov'
         self.source_name = 'Polkadot'
         self.links_post = []
+        self.filter_24_date = filter_24_date
 
     def load_page(self, url):
         try:
@@ -103,7 +108,23 @@ class PolcadotPars:
 
         return name_them, count_post
 
-    def filter_date(self, row, name_them):
+    def filter_date(self, date_post):
+        if 'hour' in date_post:
+            return True
+
+        if 'day' in date_post:
+            try:
+                coun_day = int(date_post.split()[0])
+            except:
+                return True
+            if coun_day > 1:
+                return False
+
+
+        return False
+
+
+    def get_date(self, row, name_them):
         try:
             _id_post = row.find_elements(by=By.XPATH,
                                          value=f".//td")
@@ -113,21 +134,11 @@ class PolcadotPars:
             else:
                 id_post = _id_post[-2].text
         except:
-            return True
+            return ''
 
-        if 'hour' in id_post:
-            return id_post
-
-        if 'day' in id_post:
-            try:
-                coun_day = int(id_post.split()[0])
-            except:
-                return id_post
-            if coun_day > 1:
-                return False
+        return id_post
 
 
-        return False
 
     def generet_links(self, list_row, name_them):
 
@@ -167,12 +178,15 @@ class PolcadotPars:
             except:
                 name_post = ''
 
-            date_post = self.filter_date(row, name_them)
+            date_post = self.get_date(row, name_them)
 
-            if not date_post:
-                """Фильтр по дате в 24 часа"""
-                continue
+            if self.filter_24_date:
 
+                filter_date = self.filter_date(date_post)
+
+                if not filter_date:
+                    """Фильтр по дате в 24 часа"""
+                    continue
 
             good_links = f'{link}/{slug}/{id_post}'
 
@@ -212,12 +226,6 @@ class PolcadotPars:
             try:
 
                 list_com_in = elements[1].find_elements(by=By.XPATH, value=f".//li")
-                # if self.stels:
-                #
-                #     list_com_in = elements[2].find_elements(by=By.XPATH, value=f".//li")
-                # else:
-                #
-                #     list_com_in = elements[1].find_elements(by=By.XPATH, value=f".//li")
 
             except:
                 # print(f'Ошибка при 2 парсинге комментариев "{es}"')
@@ -355,6 +363,17 @@ class PolcadotPars:
             print(f'Не нашёл тем на {self.source_name} завершаюсь')
             return False
 
+    def save_to_json(self, filename):
+
+        filename = f'{filename}.json'
+
+        try:
+            with open(filename, 'w', encoding='utf-8') as file:
+                json.dump(self.links_post, file, indent=4, ensure_ascii=False)
+        except:
+            return False
+
+        return filename
 
 
     def start_pars(self):
@@ -364,9 +383,9 @@ class PolcadotPars:
         if not result_start_page:
             return False
 
-        list_comments = self.scrap_comment()
+        list_ivent = self.scrap_comment()
 
-        print(f'Спарсил {len(list_comments)} общих комментария')
+        print(f'Спарсил {len(list_ivent)} общих комментария')
 
         response = self.pars_step1_rows()
 
@@ -377,6 +396,10 @@ class PolcadotPars:
         # list_good_pars_post = PolcadotPostItter(self.driver, links_post).start_post_pars()
 
 
-        print(list_good_pars_post)
+        file_name = f'{datetime.now().strftime("%H_%M_%S")}'
 
-        #TODO сохранить данные
+        file_name_exel = SaveResult(self.links_post, list_ivent).save_file(file_name)
+
+        file_name_json = self.save_to_json(file_name)
+
+        return file_name
