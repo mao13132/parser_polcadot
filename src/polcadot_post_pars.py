@@ -1,12 +1,6 @@
 import time
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-
-from src.temp_list import TempList
 
 
 class PolcadotPostPars:
@@ -239,7 +233,10 @@ class PolcadotPostPars:
         try:
             name = comment.find_element(by=By.XPATH, value=f".//*[contains(@class, 'identityName')]").text
         except:
-            name = ''
+            try:
+                name = comment.find_element(by=By.XPATH, value=f".//*[contains(@class, 'username')]").text
+            except:
+                name = ''
 
         return name
 
@@ -252,18 +249,44 @@ class PolcadotPostPars:
 
         return time_comment
 
+    def get_time_repl(self, comment):
+        try:
+            time_comment = comment.find_element(by=By.XPATH, value=f".//*[contains(@class, 'clock')]"
+                                                                   f"//parent::span").text
+        except:
+            time_comment = ''
+
+        return time_comment
+
     def get_text_comment(self, comment):
         try:
-            text_comment_in = comment.find_elements(by=By.XPATH, value=f".//*[contains(@class, 'rounded')]")
+            text_comment = comment.find_element(by=By.XPATH, value=f".//*[(contains(@class, 'bg-comment')) "
+                                                                   f"and contains(@class, 'text') ]").text
+            # text_comment_in = comment.find_elements(by=By.XPATH, value=f".//*[contains(@class, 'rounded')]")
         except:
-            return ''
+            try:
+                text_comment = comment.text.split('\n')[-1]
+            except:
+                return ''
 
-        try:
-            text_comment = text_comment_in[-2].text
-        except:
-            text_comment = ''
+        # try:
+        #     text_comment = text_comment_in[0].text
+        #     # text_comment = text_comment_in[-2].text
+        # except:
+        #     text_comment = ''
 
         return text_comment
+
+    # def check_replieds(self, comment):
+    #     try:
+    #         check_rep = comment.find_elements(by=By.XPATH, value=f".//*[contains(text(), 'replied')]")
+    #     except:
+    #         return False
+    #
+    #     if check_rep == []:
+    #         return False
+    #
+    #     return True
 
     def get_reaction_comment(self, comment):
         try:
@@ -277,7 +300,43 @@ class PolcadotPostPars:
 
         return like, dislike
 
+
+
+    def check_replieds(self, comment):
+        try:
+            check_rep = comment.find_elements(by=By.XPATH, value=f".//*[contains(@class, 'comment-box')]")
+        except:
+            return []
+
+        return check_rep
+
+
+    def itter_replies(self, list_replies, owner_name):
+        """Для репостов!!!"""
+        list_comment = []
+
+        for comment in list_replies:
+            dict_comment = {}
+            name_comment = self.get_name_comment(comment)
+            dict_comment['name_comment'] = f'rep ({owner_name}): {name_comment}'
+
+            time_comment = self.get_time_comment(comment)
+            dict_comment['time_comment'] = time_comment
+
+            text_comment = self.get_text_comment(comment)
+            dict_comment['text_comment'] = text_comment
+
+            like, dislike = self.get_reaction_comment(comment)
+            dict_comment['like'] = like
+            dict_comment['dislike'] = dislike
+            list_comment.append(dict_comment)
+
+        return list_comment
+
+
+
     def itter_comments(self, list_comments_in):
+        """Для постов!!!"""
         list_comment = []
 
         for comment in list_comments_in:
@@ -295,8 +354,16 @@ class PolcadotPostPars:
             like, dislike = self.get_reaction_comment(comment)
             dict_comment['like'] = like
             dict_comment['dislike'] = dislike
-
             list_comment.append(dict_comment)
+
+            list_repost = self.check_replieds(comment)
+
+            if list_repost != []:
+                list_replieys = self.itter_replies(list_repost, name_comment)
+                list_comment.extend(list_replieys)
+
+                # print()
+
 
         return list_comment
 

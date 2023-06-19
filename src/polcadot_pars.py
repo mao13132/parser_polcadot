@@ -7,13 +7,9 @@ from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 
 from save_result import SaveResult
 from src.polcadot_post_itter import PolcadotPostItter
-from src.temp_list import TempList
-from telegram_debug import SendlerOneCreate
 
 
 class PolcadotPars:
@@ -120,9 +116,7 @@ class PolcadotPars:
             if coun_day > 1:
                 return False
 
-
         return False
-
 
     def get_date(self, row, name_them):
         try:
@@ -137,8 +131,6 @@ class PolcadotPars:
             return ''
 
         return id_post
-
-
 
     def generet_links(self, list_row, name_them):
 
@@ -173,7 +165,7 @@ class PolcadotPars:
 
             try:
                 _name_post = row.find_elements(by=By.XPATH,
-                                             value=f".//td")
+                                               value=f".//td")
                 name_post = _name_post[1].text
             except:
                 name_post = ''
@@ -233,11 +225,9 @@ class PolcadotPars:
                 continue
 
             if len(list_com_in) > 0:
-
                 return list_com_in
 
             time.sleep(time_wait)
-
 
     def scrap_comment(self):
         print(f'Начинаю парсинг общих комментариев')
@@ -248,15 +238,11 @@ class PolcadotPars:
         if not list_com_in:
             return False
 
-
         for comments in list_com_in:
             try:
                 data_com, time_comm, author_comm, text_comm = comments.text.split('\n')
             except Exception as es:
                 print(f'Ошибка при сплите комментария "{es}"')
-
-                SendlerOneCreate(self.driver).send_error_tg_img()
-
                 continue
 
             dict_comm = {}
@@ -265,13 +251,9 @@ class PolcadotPars:
             dict_comm['author_comm'] = author_comm
             dict_comm['text_comm'] = text_comm
 
-
             good_comments.append(dict_comm)
 
         return good_comments
-
-
-
 
     def loop_scrap_rows(self, list_them):
         for them in list_them[1:-1]:
@@ -288,9 +270,7 @@ class PolcadotPars:
             if not active_theme:
                 continue
 
-            #TODO вставить парсер комментариев
-
-
+            # TODO вставить парсер комментариев
 
             list_row = self.get_row_start_page()
 
@@ -346,7 +326,6 @@ class PolcadotPars:
 
     def pars_step1_rows(self):
 
-
         list_them = self.get_thema()
 
         if not list_them:
@@ -375,7 +354,6 @@ class PolcadotPars:
 
         return filename
 
-
     def start_pars(self):
 
         result_start_page = self.load_start_site()
@@ -389,12 +367,7 @@ class PolcadotPars:
 
         response = self.pars_step1_rows()
 
-        # list_comments = TempList.list_comments
-        # links_post = TempList.link_posts
-
         list_good_pars_post = PolcadotPostItter(self.driver, self.links_post).start_post_pars()
-        # list_good_pars_post = PolcadotPostItter(self.driver, links_post).start_post_pars()
-
 
         file_name = f'{datetime.now().strftime("%H_%M_%S")}'
 

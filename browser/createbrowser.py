@@ -34,6 +34,7 @@ class CreatBrowser:
         options.add_argument("--headless")
         options.add_argument("window-size=1400,600")
 
+
         options.add_argument('--disable-dev-shm-usage')
 
         prefs = {"enable_do_not_track": True}
@@ -57,7 +58,7 @@ class CreatBrowser:
 
 
 
-        s = Service(executable_path=r"/usr/local/bin/chromedriver")
+        s = Service(executable_path=r"browser\chromedriver.exe")
 
         self.driver = webdriver.Chrome(service=s, options=options)
 

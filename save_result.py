@@ -63,7 +63,7 @@ class SaveResult:
             ws.cell(row=count_def + count_com, column=21).value = int(comment['like'])
             ws.cell(row=count_def + count_com, column=22).value = int(comment['dislike'])
             ws.cell(row=count_def + count_com, column=23).value = comment['time_comment']
-            print(f'')
+
 
 
 
@@ -74,7 +74,6 @@ class SaveResult:
             for count_post, post in enumerate(them['links']):
                 count_comments = len(post['data']['comment'])
 
-                print(f'Кол-во комментариев {count_comments}')
 
                 if count_comments > 1:
 
@@ -89,11 +88,6 @@ class SaveResult:
                 else:
                     count_def += 1
 
-                print(f'Теперь стартовая строка {count_def}')
-
-
-
-                print()
 
     def one_sheet(self, ws):
 
@@ -130,7 +124,6 @@ class SaveResult:
 
             count_def += 1
 
-            # print(ivent)
 
     def save_ivent(self, ws):
 
