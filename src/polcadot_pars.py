@@ -2,7 +2,7 @@ import time
 
 import json
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,14 +11,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from save_result import SaveResult
 from src.polcadot_post_itter import PolcadotPostItter
 
+from dateutil import parser
+
 
 class PolcadotPars:
-    def __init__(self, driver, filter_24_date):
+    def __init__(self, driver, filter_count_day):
         self.driver = driver
         self.url = f'https://polkadot.polkassembly.io/opengov'
         self.source_name = 'Polkadot'
         self.links_post = []
-        self.filter_24_date = filter_24_date
+        self.filter_count_day = filter_count_day
 
     def load_page(self, url):
         try:
@@ -108,13 +110,26 @@ class PolcadotPars:
         if 'hour' in date_post:
             return True
 
+        if 'min' in date_post:
+            return True
+
         if 'day' in date_post:
             try:
                 coun_day = int(date_post.split()[0])
             except:
                 return True
-            if coun_day > 1:
-                return False
+            if timedelta(coun_day) < timedelta(self.filter_count_day):
+                return True
+
+        try:
+            post_time = parser.parse(date_post)
+
+            target_time = datetime.now() - post_time
+
+            if target_time < timedelta(self.filter_count_day):
+                return True
+        except:
+            pass
 
         return False
 
@@ -172,13 +187,11 @@ class PolcadotPars:
 
             date_post = self.get_date(row, name_them)
 
-            if self.filter_24_date:
+            filter_date = self.filter_date(date_post)
 
-                filter_date = self.filter_date(date_post)
-
-                if not filter_date:
-                    """Фильтр по дате в 24 часа"""
-                    continue
+            if not filter_date:
+                """Фильтр по дате в 24 часа"""
+                continue
 
             good_links = f'{link}/{slug}/{id_post}'
 
@@ -240,7 +253,8 @@ class PolcadotPars:
 
         for comments in list_com_in:
             try:
-                data_com, time_comm, author_comm, text_comm = comments.text.split('\n')
+                data_com, time_comm, text_comm = comments.text.split('\n')
+                # data_com, time_comm, author_comm, text_comm = comments.text.split('\n')
             except Exception as es:
                 print(f'Ошибка при сплите комментария "{es}"')
                 continue
@@ -248,7 +262,8 @@ class PolcadotPars:
             dict_comm = {}
             dict_comm['data_com'] = data_com
             dict_comm['time_comm'] = time_comm
-            dict_comm['author_comm'] = author_comm
+            dict_comm['author_comm'] = ''
+            # dict_comm['author_comm'] = author_comm
             dict_comm['text_comm'] = text_comm
 
             good_comments.append(dict_comm)
@@ -363,7 +378,7 @@ class PolcadotPars:
 
         list_ivent = self.scrap_comment()
 
-        print(f'Спарсил {len(list_ivent)} общих комментария')
+        print(f'Спарсил {len(list_ivent)} ивентов')
 
         response = self.pars_step1_rows()
 

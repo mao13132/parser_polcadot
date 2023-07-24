@@ -14,7 +14,6 @@ class PolcadotPostItter:
     def load_page(self, url):
         try:
 
-
             self.driver.get(url)
             return True
         except Exception as es:
@@ -23,8 +22,10 @@ class PolcadotPostItter:
 
     def __check_load_page(self, name_post):
         try:
+            # WebDriverWait(self.driver, 60).until(
+            #     EC.presence_of_element_located((By.XPATH, f'//*[contains(text(), "{name_post[:-3]}")]')))
             WebDriverWait(self.driver, 60).until(
-                EC.presence_of_element_located((By.XPATH, f'//*[contains(text(), "{name_post[:-3]}")]')))
+                EC.presence_of_element_located((By.XPATH, f"//*[contains(@class, 'children')]")))
             return True
         except Exception as es:
             print(f'Ошибка при загрузке "{name_post}" поста "{es}"')
@@ -66,10 +67,6 @@ class PolcadotPostItter:
             self.links_post[count_seld_dict]['links'][count]['data'] = data_pars
 
             # print(f'Обработал пост {post["name_post"][:10]}')
-
-
-
-
 
     def itter_dict_them(self):
         for count_seld_dict, post in enumerate(self.links_post):

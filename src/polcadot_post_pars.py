@@ -265,28 +265,12 @@ class PolcadotPostPars:
             # text_comment_in = comment.find_elements(by=By.XPATH, value=f".//*[contains(@class, 'rounded')]")
         except:
             try:
-                text_comment = comment.text.split('\n')[-1]
+                text_comment = comment.find_element(by=By.XPATH, value=f".//*[(contains(@class, 'rounded')) "
+                                                                       f"and contains(@class, 'text') ]").text
             except:
                 return ''
 
-        # try:
-        #     text_comment = text_comment_in[0].text
-        #     # text_comment = text_comment_in[-2].text
-        # except:
-        #     text_comment = ''
-
         return text_comment
-
-    # def check_replieds(self, comment):
-    #     try:
-    #         check_rep = comment.find_elements(by=By.XPATH, value=f".//*[contains(text(), 'replied')]")
-    #     except:
-    #         return False
-    #
-    #     if check_rep == []:
-    #         return False
-    #
-    #     return True
 
     def get_reaction_comment(self, comment):
         try:
@@ -300,8 +284,6 @@ class PolcadotPostPars:
 
         return like, dislike
 
-
-
     def check_replieds(self, comment):
         try:
             check_rep = comment.find_elements(by=By.XPATH, value=f".//*[contains(@class, 'comment-box')]")
@@ -309,7 +291,6 @@ class PolcadotPostPars:
             return []
 
         return check_rep
-
 
     def itter_replies(self, list_replies, owner_name):
         """Для репостов!!!"""
@@ -332,8 +313,6 @@ class PolcadotPostPars:
             list_comment.append(dict_comment)
 
         return list_comment
-
-
 
     def itter_comments(self, list_comments_in):
         """Для постов!!!"""
@@ -361,9 +340,6 @@ class PolcadotPostPars:
             if list_repost != []:
                 list_replieys = self.itter_replies(list_repost, name_comment)
                 list_comment.extend(list_replieys)
-
-                # print()
-
 
         return list_comment
 
@@ -412,6 +388,5 @@ class PolcadotPostPars:
 
         list_comment = self.get_comments_post()
         self.post_data['comment'] = list_comment
-
 
         return self.post_data

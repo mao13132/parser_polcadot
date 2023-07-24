@@ -9,8 +9,8 @@ class SaveResult:
         self.ivent_dict = ivent_dict
 
         self.colums = ['name_post', 'link', 'date', 'name_them', 'post_text', 'name_author', 'likes_post',
-                       'dislike_post', 'status', 'model', 'decision', 'confirmation', 'aye', 'noy', 'ayes',
-                       'nays', 'support', 'issuance', 'author_comment', 'text_comment', 'like_comment',
+                       'dislike_post', 'status', 'model', 'decision', 'confirmation', 'Votes in favor', 'Votes against',
+                       'DOTs in favor', 'DOTs against', 'support', 'issuance', 'author_comment', 'text_comment', 'like_comment',
                        'dislike_comment', 'time_comment']
 
         self.colums_ivent = ['date', 'time', 'author', 'name']
